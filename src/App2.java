@@ -126,3 +126,80 @@ class CultivoCSVHandler {
         }
         return cultivos;
     }
+
+    public static void guardarCultivosEnCSV(String archivo, List<Cultivo> cultivos) {
+        try (PrintWriter pw = new PrintWriter(new FileWriter(archivo))) {
+            for (Cultivo c : cultivos) {
+                pw.println(c.toCSV());
+            }
+            System.out.println("Cultivos guardados en " + archivo);
+        } catch (IOException e) {
+            System.out.println("Error al guardar el archivo: " + e.getMessage());
+        }
+    }
+}
+
+// Clase principal de la aplicación agrícola
+public class App2 {
+// Métodos gestionCultivos, gestionParcelas, gestionActividades, gestionBusquedaReporte, main ya definidos arriba
+
+// Menú de búsqueda y reportes por nombre/variedad o estado de los cultivos
+    public static void gestionBusquedaReporte(Scanner sc, List<Cultivo> cultivos) {
+        int opcion;
+        do {
+            System.out.println("=== BÚSQUEDA / REPORTE ===");
+            System.out.println("1. Buscar cultivo por nombre o variedad");
+            System.out.println("2. Reporte por estado (ACTIVO, COSECHADO, EN_RIESGO)");
+            System.out.println("3. Volver");
+            System.out.print("Opción: ");
+            opcion = sc.nextInt(); sc.nextLine();
+
+            switch (opcion) {
+                case 1 -> {
+                    // Búsqueda textual por nombre o variedad (case-insensitive)
+                    System.out.print("Ingrese nombre o variedad a buscar: ");
+                    String criterio = sc.nextLine().toLowerCase();
+                    boolean encontrado = false;
+                    for (Cultivo c : cultivos) {
+                        if (c.getNombre().toLowerCase().contains(criterio) ||
+                            c.getVariedad().toLowerCase().contains(criterio)) {
+                            System.out.println(c);
+                            encontrado = true;
+                        }
+                    }
+                    if (!encontrado) System.out.println("No se encontraron coincidencias.");
+                }
+                case 2 -> {
+                // Agrupación por estado y visualización de cultivos
+                    Map<String, List<Cultivo>> porEstado = new HashMap<>();
+                    for (Cultivo c : cultivos) {
+                        porEstado.putIfAbsent(c.getEstado(), new ArrayList<>());
+                        porEstado.get(c.getEstado()).add(c);
+                    }
+                    for (String estado : porEstado.keySet()) {
+                        System.out.println("Estado: " + estado);
+                        porEstado.get(estado).forEach(c -> System.out.println("- " + c));
+                    }
+                }
+                case 3 -> System.out.println("Volviendo al menú principal...");
+                default -> System.out.println("Opción inválida.");
+            }
+        } while (opcion != 3);
+    }
+    // Método principal: arranca el programa, carga cultivos y gestiona el menú
+    public static void main(String[] args) {
+        if (args.length < 1) {
+            System.out.println("Uso: java App2 cultivos.csv");
+            return;
+        }
+
+        String archivoCSV = args[0];
+        List<Cultivo> cultivos = CultivoCSVHandler.leerCultivosDesdeCSV(archivoCSV);
+
+        // Genera lista de parcelas únicas a partir de los cultivos
+        List<Parcela> parcelas = new ArrayList<>();
+        for (Cultivo c : cultivos) {
+            if (parcelas.stream().noneMatch(p -> p.getCodigo().equals(c.getCodigoParcela()))) {
+                parcelas.add(new Parcela(c.getCodigoParcela()));
+            }
+        }
