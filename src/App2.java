@@ -203,3 +203,180 @@ public class App2 {
                 parcelas.add(new Parcela(c.getCodigoParcela()));
             }
         }
+
+        Scanner sc = new Scanner(System.in);
+        int opcion;
+        do {
+            System.out.println("\n=== MENÚ PRINCIPAL ===");
+            System.out.println("1. Gestión de Cultivos"); 
+            System.out.println("2. Gestión de Parcelas");
+            System.out.println("3. Gestión de Actividades");
+            System.out.println("4. Búsqueda / Reporte");
+            System.out.println("5. Guardar y salir");
+            System.out.print("Seleccione una opción: ");
+            opcion = sc.nextInt(); sc.nextLine();
+
+            switch (opcion) {
+                case 1 -> gestionCultivos(sc, cultivos); // CRUD de cultivos
+                case 2 -> gestionParcelas(sc, cultivos, parcelas); // CRUD de parcelas y asignaciones
+                case 3 -> gestionActividades(sc, cultivos); // CRUD de actividades
+                case 4 -> gestionBusquedaReporte(sc, cultivos); // Reportes y filtros
+                case 5 -> CultivoCSVHandler.guardarCultivosEnCSV(archivoCSV, cultivos); // Guardar CSV
+                default -> System.out.println("Opción inválida.");
+            }
+        } while (opcion != 4);
+    }
+
+    // ... (resto del código ya definido)
+
+    public static void gestionCultivos(Scanner sc, List<Cultivo> cultivos) {
+        int opcion;
+        do {
+            System.out.println("=== GESTIÓN DE CULTIVOS ===");
+            System.out.println("1. Listar cultivos");
+            System.out.println("2. Crear cultivo");
+            System.out.println("3. Eliminar cultivo (si no tiene actividades)");
+            System.out.println("4. Editar cultivo");
+            System.out.println("5. Volver");
+            System.out.print("Opción: ");
+            opcion = sc.nextInt(); sc.nextLine();
+
+            switch (opcion) {
+                case 1 -> {
+                    for (int i = 0; i < cultivos.size(); i++) {
+                        System.out.println((i + 1) + ". " + cultivos.get(i));
+                    }
+                }
+                case 2 -> {
+                    System.out.print("Nombre: "); String nombre = sc.nextLine();
+                    System.out.print("Variedad: "); String variedad = sc.nextLine();
+                    System.out.print("Superficie: "); double sup = sc.nextDouble(); sc.nextLine();
+                    System.out.print("Código parcela: "); String parcela = sc.nextLine();
+                    System.out.print("Fecha siembra: "); String fecha = sc.nextLine();
+                    System.out.print("Estado: "); String estado = sc.nextLine();
+                    List<Actividad> acts = new ArrayList<>();
+                    String cont;
+                    do {
+                        System.out.print("Actividad (tipo:fecha): "); String linea = sc.nextLine();
+                        String[] p = linea.split(":");
+                        if (p.length >= 2) acts.add(new Actividad(p[0], p[1]));
+                        System.out.print("¿Otra? (s/n): "); cont = sc.nextLine();
+                    } while (cont.equalsIgnoreCase("s"));
+                    cultivos.add(new Cultivo(nombre, variedad, sup, parcela, fecha, estado, acts));
+                }
+                case 3 -> {
+                    System.out.print("Índice a eliminar: "); int ind = sc.nextInt(); sc.nextLine();
+                    if (ind >= 1 && ind <= cultivos.size()) {
+                        if (cultivos.get(ind - 1).getActividades().isEmpty()) {
+                            cultivos.remove(ind - 1);
+                            System.out.println("Cultivo eliminado.");
+                        } else {
+                            System.out.println("No se puede eliminar: tiene actividades asignadas.");
+                        }
+                    }
+                }
+                case 4 -> {
+                    System.out.print("Índice a editar: "); int i = sc.nextInt(); sc.nextLine();
+                    if (i >= 1 && i <= cultivos.size()) {
+                        Cultivo c = cultivos.get(i - 1);
+                        System.out.print("Nuevo nombre (" + c.getNombre() + "): "); String n = sc.nextLine();
+                        System.out.print("Nueva variedad (" + c.getVariedad() + "): "); String v = sc.nextLine();
+                        System.out.print("Nueva superficie (" + c.getSuperficie() + "): "); String s = sc.nextLine();
+                        System.out.print("Nueva parcela (" + c.getCodigoParcela() + "): "); String p = sc.nextLine();
+                        System.out.print("Nueva fecha siembra (" + c.getFechaSiembra() + "): "); String f = sc.nextLine();
+                        System.out.print("Nuevo estado (" + c.getEstado() + "): "); String e = sc.nextLine();
+                        Cultivo nuevo = new Cultivo(
+                            n.isEmpty() ? c.getNombre() : n,
+                            v.isEmpty() ? c.getVariedad() : v,
+                            s.isEmpty() ? c.getSuperficie() : Double.parseDouble(s),
+                            p.isEmpty() ? c.getCodigoParcela() : p,
+                            f.isEmpty() ? c.getFechaSiembra() : f,
+                            e.isEmpty() ? c.getEstado() : e,
+                            c.getActividades());
+                        cultivos.set(i - 1, nuevo);
+                        System.out.println("Cultivo editado.");
+                    }
+                }
+                case 5 -> System.out.println("Volviendo al menú principal...");
+                default -> System.out.println("Opción inválida.");
+            }
+        } while (opcion != 5);
+    }
+
+    public static void gestionParcelas(Scanner sc, List<Cultivo> cultivos, List<Parcela> parcelas) {
+        int opcion;
+        do {
+            System.out.println("=== GESTIÓN DE PARCELAS ===");
+            System.out.println("1. Listar parcelas con cultivos");
+            System.out.println("2. Agregar parcela");
+            System.out.println("3. Eliminar parcela (si no tiene cultivos activos)");
+            System.out.println("4. Asignar cultivo a parcela");
+            System.out.println("5. Volver");
+            System.out.print("Opción: ");
+            opcion = sc.nextInt(); sc.nextLine();
+
+            switch (opcion) {
+                case 1 -> {
+                    for (Parcela p : parcelas) {
+                        System.out.println(p);
+                        for (Cultivo c : cultivos) {
+                            if (c.getCodigoParcela().equals(p.getCodigo())) {
+                                System.out.println("  - " + c);
+                            }
+                        }
+                    }
+                }
+                case 2 -> {
+                    System.out.print("Código nueva parcela: ");
+                    String codigo = sc.nextLine();
+                    if (parcelas.stream().anyMatch(p -> p.getCodigo().equals(codigo))) {
+                        System.out.println("Parcela ya existe.");
+                    } else {
+                        parcelas.add(new Parcela(codigo));
+                        System.out.println("Parcela agregada.");
+                    }
+                }
+                case 3 -> {
+                    System.out.print("Código de parcela a eliminar: ");
+                    String codigo = sc.nextLine();
+                    boolean tieneCultivos = cultivos.stream().anyMatch(c -> c.getCodigoParcela().equals(codigo) && c.getEstado().equals("ACTIVO"));
+                    if (tieneCultivos) {
+                        System.out.println("No se puede eliminar: tiene cultivos activos.");
+                    } else {
+                        parcelas.removeIf(p -> p.getCodigo().equals(codigo));
+                        System.out.println("Parcela eliminada.");
+                    }
+                }
+                case 4 -> {
+                    for (int i = 0; i < cultivos.size(); i++) {
+                        System.out.println((i + 1) + ". " + cultivos.get(i));
+                    }
+                    System.out.print("Seleccione cultivo a asignar: ");
+                    int idx = sc.nextInt(); sc.nextLine();
+                    if (idx >= 1 && idx <= cultivos.size()) {
+                        System.out.print("Nuevo código de parcela: ");
+                        String nueva = sc.nextLine();
+                        cultivos.get(idx - 1).setCodigoParcela(nueva);
+                        if (parcelas.stream().noneMatch(p -> p.getCodigo().equals(nueva))) {
+                            parcelas.add(new Parcela(nueva));
+                        }
+                        System.out.println("Cultivo asignado a nueva parcela.");
+                    }
+                }
+                case 5 -> System.out.println("Volviendo al menú principal...");
+                default -> System.out.println("Opción inválida.");
+            }
+        } while (opcion != 5);
+    }
+
+    public static void gestionActividades(Scanner sc, List<Cultivo> cultivos) {
+        int opcion;
+        do {
+            System.out.println("=== GESTIÓN DE ACTIVIDADES ===");
+            System.out.println("1. Registrar actividad");
+            System.out.println("2. Listar actividades por cultivo");
+            System.out.println("3. Eliminar actividad");
+            System.out.println("4. Marcar actividad como completada");
+            System.out.println("5. Volver");
+            System.out.print("Opción: ");
+            opcion = sc.nextInt(); sc.nextLine();
