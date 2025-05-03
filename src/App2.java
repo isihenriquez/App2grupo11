@@ -380,3 +380,67 @@ public class App2 {
             System.out.println("5. Volver");
             System.out.print("Opción: ");
             opcion = sc.nextInt(); sc.nextLine();
+
+            switch (opcion) {
+                case 1 -> {
+                    for (int i = 0; i < cultivos.size(); i++) {
+                        System.out.println((i + 1) + ". " + cultivos.get(i));
+                    }
+                    System.out.print("Seleccione cultivo: ");
+                    int idx = sc.nextInt(); sc.nextLine();
+                    if (idx >= 1 && idx <= cultivos.size()) {
+                        System.out.print("Tipo: "); String tipo = sc.nextLine();
+                        System.out.print("Fecha (YYYY-MM-DD): "); String fecha = sc.nextLine();
+                        cultivos.get(idx - 1).getActividades().add(new Actividad(tipo, fecha));
+                        System.out.println("Actividad registrada.");
+                    }
+                }
+                case 2 -> {
+                    for (int i = 0; i < cultivos.size(); i++) {
+                        System.out.println((i + 1) + ". " + cultivos.get(i));
+                    }
+                    System.out.print("Seleccione cultivo: ");
+                    int idx = sc.nextInt(); sc.nextLine();
+                    if (idx >= 1 && idx <= cultivos.size()) {
+                        List<Actividad> acts = cultivos.get(idx - 1).getActividades();
+                        if (acts.isEmpty()) System.out.println("Sin actividades registradas.");
+                        else acts.forEach(a -> System.out.println("- " + a));
+                    }
+                }
+                case 3 -> {
+                    for (int i = 0; i < cultivos.size(); i++) System.out.println((i + 1) + ". " + cultivos.get(i));
+                    System.out.print("Seleccione cultivo: ");
+                    int idx = sc.nextInt(); sc.nextLine();
+                    if (idx >= 1 && idx <= cultivos.size()) {
+                        List<Actividad> acts = cultivos.get(idx - 1).getActividades();
+                        for (int j = 0; j < acts.size(); j++) System.out.println((j + 1) + ". " + acts.get(j));
+                        System.out.print("Actividad a eliminar: ");
+                        int a = sc.nextInt(); sc.nextLine();
+                        if (a >= 1 && a <= acts.size()) {
+                            acts.remove(a - 1);
+                            System.out.println("Actividad eliminada.");
+                        }
+                    }
+                }
+                case 4 -> {
+                    for (int i = 0; i < cultivos.size(); i++) System.out.println((i + 1) + ". " + cultivos.get(i));
+                    System.out.print("Seleccione cultivo: ");
+                    int idx = sc.nextInt(); sc.nextLine();
+                    if (idx >= 1 && idx <= cultivos.size()) {
+                        List<Actividad> acts = cultivos.get(idx - 1).getActividades();
+                        for (int j = 0; j < acts.size(); j++) System.out.println((j + 1) + ". " + acts.get(j));
+                        System.out.print("Actividad a completar: ");
+                        int a = sc.nextInt(); sc.nextLine();
+                        if (a >= 1 && a <= acts.size()) {
+                            acts.get(a - 1).completar();
+                            System.out.println("Actividad marcada como completada.");
+                        }
+                    }
+                }
+                case 5 -> System.out.println("Volviendo al menú principal...");
+                default -> System.out.println("Opción inválida.");
+            }
+        } while (opcion != 5);
+    }
+    // Ya agregados previamente en bloques anteriores
+}
